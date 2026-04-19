@@ -14,6 +14,20 @@ dim(data_raw)
 glimpse(data_raw)
 str(data_raw)
 
+# Dubletter ----
+
+# Identiska rader
+
+data_raw %>%
+  duplicated() %>%
+  sum()
+
+# Förekommer samma customer_id mer än en gång?
+
+data_raw %>%
+  count(customer_id) %>%
+  filter(n > 1)
+
 # Saknade värden, antal och andel ----
 
 data_raw %>%
@@ -54,6 +68,7 @@ data_raw %>%
   print(n = Inf)
 
 # Fördelning och outliers i datat, numeriska variabler ----
+
 # Histogram
 
 hist_plot_eda <- data_raw %>%
