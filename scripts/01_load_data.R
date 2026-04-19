@@ -1,10 +1,14 @@
 # Ladda in paket ----
+
 library(tidyverse)
+library(naniar)
 
 # Ladda in datan ----
+
 data_raw <- read_csv("data/insurance_costs.csv")
 
 # Datasetet storlek och struktur ----
+
 View(data_raw)
 dim(data_raw)
 glimpse(data_raw)
@@ -18,6 +22,10 @@ data_raw %>%
   mutate(andel = value / nrow(data_raw) * 100) %>%
   arrange(desc(andel))
 
+# Undersöka om det finns fler NA än 1 per observation
+
+gg_miss_upset(data_raw)
+
 # Inkonsekvenser i datat, kategoriska variabler ----
 
 data_raw %>%
@@ -30,12 +38,24 @@ data_raw %>%
   )
 
 # Inkonsekvenser i datat, numeriska variabler ----
+
 data_raw %>%
   select(where(is.numeric)) %>%
   summary()
 
-# Fördelning och outliers i datat ----
+# Fördelning i datat, kategoriska variabler ----
+
+data_raw %>%
+  select(where(is.character), -customer_id) %>%
+  pivot_longer(everything()) %>%
+  count(name, value) %>%
+  group_by(name) %>%
+  arrange(desc(n), .by_group = TRUE) %>%
+  print(n = Inf)
+
+# Fördelning och outliers i datat, numeriska variabler ----
 # Histogram
+
 hist_plot_eda <- data_raw %>%
   select(age, bmi, charges) %>%
   pivot_longer(everything()) %>%
@@ -51,11 +71,13 @@ hist_plot_eda <- data_raw %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Visa och spara plotten
+
 hist_plot_eda
 
 ggsave("output/eda/hist_plot_eda.png", plot = hist_plot_eda, width = 6, height = 4)
 
 # Boxplot
+
 box_plot_eda <- data_raw %>%
   select(age, bmi, charges) %>%
   pivot_longer(everything()) %>%
@@ -71,11 +93,7 @@ box_plot_eda <- data_raw %>%
   theme(plot.title = element_text(hjust = 0.5))
 
 # Visa och spara plotten
+
 box_plot_eda
 
 ggsave("output/eda/box_plot_eda.png", plot = box_plot_eda, width = 6, height = 4)
-
-
-
-
-
