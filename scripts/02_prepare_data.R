@@ -1,14 +1,14 @@
 source("scripts/01_load_data.R")
 library(tidyverse)
 
-# Funktion för att hitta typvärdet (mode)
+# Funktion för att hitta typvärdet (mode) ----
 
 get_mode <- function(x) {
   ux <- unique(na.omit(x))
   ux[which.max(tabulate(match(x, ux)))]
 }
 
-# Städa och Feature Engineering i samma pipe
+# Städa och Feature Engineering i samma pipe ----
 
 data_clean <- data_raw %>%
   mutate(
@@ -30,15 +30,9 @@ data_clean <- data_raw %>%
       get_mode(exercise_level),
       exercise_level),
     
-    # Logiska variabler
-    smoker = recode(smoker, "yes" = TRUE, "no" = FALSE),
-    chronic_condition = recode(chronic_condition, "yes" = TRUE, "no" = FALSE),
-    
-    # Kategoriska variabler till faktorer
-    region = as.factor(region),
-    exercise_level = as.factor(exercise_level),
-    plan_type = as.factor(plan_type),
-    sex = as.factor(sex),
+    # Logiska variabler för beräkningar
+    smoker_logic = recode(smoker, "yes" = TRUE, "no" = FALSE),
+    chronic_condition_logic = recode(chronic_condition, "yes" = TRUE, "no" = FALSE),
     
     # Nya variabler
     bmi_category = case_when(
@@ -54,14 +48,21 @@ data_clean <- data_raw %>%
     ),
     prior_events = prior_accidents + prior_claims,
     risk_score = 
-      as.integer(smoker) +
-      as.integer(chronic_condition) +
+      as.integer(smoker_logic) +
+      as.integer(chronic_condition_logic) +
       if_else(bmi >= 30, 1, 0),
     
-    # Göra nya variablerna till faktorer
-    bmi_category = as.factor(bmi_category),
-    age_category = as.factor(age_category)
-)
+    # Kategoriska variabler till faktorer
+    smoker = factor(smoker_logic, levels = c(FALSE, TRUE), labels = c("no", "yes")),
+    chronic_condition = factor(chronic_condition_logic, levels = c(FALSE, TRUE), labels = c("no", "yes")),
+    region = as.factor(region),
+    exercise_level = factor(exercise_level, levels = c("low", "medium", "high")),
+    plan_type = factor(plan_type, levels = c("basic", "standard", "premium")),
+    sex = as.factor(sex),
+    bmi_category = factor(bmi_category, levels = c("underweight", "normal", "overweight", "obese")),
+    age_category = factor(age_category, levels = c("young", "middle-aged", "senior"))
+) %>%
+  select(-smoker_logic, -chronic_condition_logic)
 
 glimpse(data_clean)
 summary(data_clean)

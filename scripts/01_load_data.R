@@ -112,3 +112,4 @@ box_plot_eda <- data_raw %>%
 box_plot_eda
 
 ggsave("output/eda/box_plot_eda.png", plot = box_plot_eda, width = 6, height = 4)
+
