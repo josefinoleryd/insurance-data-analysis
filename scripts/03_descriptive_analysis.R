@@ -19,7 +19,7 @@ corr_plot <- ggcorrplot(cor_matrix,
   theme(plot.title = element_text(hjust = 0.5))
 
 corr_plot
-ggsave("output/final/corr_plot.png", plot = corr_plot, width = 7, height = 7, dpi = 300)
+ggsave("output/analysis/corr_plot.png", plot = corr_plot, width = 7, height = 7)
 
 # Boxplots grupper med olika hälsorisker och livsstilar ----
 
@@ -50,7 +50,7 @@ health_risk_plot <- data_clean %>%
   )
 
 health_risk_plot
-ggsave("output/final/health_risk_plot.png", plot = health_risk_plot, width = 7, height = 7, dpi = 300)
+ggsave("output/analysis/health_risk_plot.png", plot = health_risk_plot, width = 7, height = 7)
 
 # Boxplots demografiska grupper ----
 
@@ -80,7 +80,7 @@ demographic_plot <- data_clean %>%
   )
 
 demographic_plot
-ggsave("output/final/demographic_plot.png", plot = demographic_plot, width = 7, height = 7, dpi = 300)
+ggsave("output/analysis/demographic_plot.png", plot = demographic_plot, width = 7, height = 7)
 
 
 # Stapeldiagram över genomsnittlig kostnad per Risk Score ----
@@ -119,4 +119,4 @@ risk_summary_plot <- risk_score_summary %>%
   )
 
 risk_summary_plot
-ggsave("output/final/risk_summary_plot.png", plot = risk_summary_plot, width = 7, height = 7, dpi = 300)
+ggsave("output/analysis/risk_summary_plot.png", plot = risk_summary_plot, width = 7, height = 7)
