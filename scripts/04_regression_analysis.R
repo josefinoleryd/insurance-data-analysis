@@ -110,6 +110,8 @@ gof_template <- list(
   list("raw" = "nobs", "clean" = "Antal obs.", "fmt" = 0),
   list("raw" = "r.squared", "clean" = "R2", "fmt" = 3),
   list("raw" = "adj.r.squared", "clean" = "R2 just.", "fmt" = 3),
+  list("raw" = "aic", "clean" = "AIC", "fmt" = 2),
+  list("raw" = "bic", "clean" = "BIC", "fmt" = 2),
   list("raw" = "rmse", "clean" = "Resid. std. fel", "fmt" = 2),
   list("raw" = "statistic", "clean" = "F-statistik", "fmt" = 1),
   list("raw" = "p.value", "clean" = "F (p-värde)", "fmt" = 3)
