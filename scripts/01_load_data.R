@@ -38,7 +38,16 @@ data_raw %>%
 
 # Undersöka om det finns fler NA än 1 per observation
 
+png(
+  filename = "output/eda/more_NA_per_obs.png",
+  width = 1200, 
+  height = 800,
+  res = 150
+)
+
 gg_miss_upset(data_raw)
+
+dev.off()
 
 # Inkonsekvenser i datat, kategoriska variabler ----
 
@@ -102,10 +111,13 @@ box_plot_eda <- data_raw %>%
   labs(
     title = "Boxplots för age, bmi och charges",
     x = NULL,
-    y = "Antal"
+    y = "Värde"
   ) +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()
+  )
 
 # Visa och spara plotten
 
