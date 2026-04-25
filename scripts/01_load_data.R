@@ -1,34 +1,38 @@
-# Ladda in paket ----
+# ---- s1-ladda-in-paket
 
 library(tidyverse)
 library(naniar)
 
-# Ladda in datan ----
+# ---- s1-ladda-data
 
-data_raw <- read_csv("data/insurance_costs.csv")
+data_raw <- read_csv("data/insurance_costs.csv", show_col_types = FALSE)
 
-# Datasetet storlek och struktur ----
+# ---- s1-storlek-och-struktur
 
-View(data_raw)
-dim(data_raw)
 glimpse(data_raw)
-str(data_raw)
 
-# Dubletter ----
+# ---- s1-dubbletter
 
-# Identiska rader
+# ---- s1-identiska-rader
 
 data_raw %>%
   duplicated() %>%
   sum()
 
-# Förekommer samma customer_id mer än en gång?
+# ---- s1-förekommer-samma-kund-flera-gånger?
 
 data_raw %>%
   count(customer_id) %>%
   filter(n > 1)
 
-# Saknade värden, antal och andel ----
+# ---- s1-identiska-rader-bortser-customer_id
+
+data_raw %>%
+  select(-customer_id) %>%
+  duplicated() %>%
+  sum()
+
+# ---- s1-saknade-värden
 
 data_raw %>%
   summarise(across(everything(), ~ sum(is.na(.)))) %>%
@@ -36,7 +40,11 @@ data_raw %>%
   mutate(andel = value / nrow(data_raw) * 100) %>%
   arrange(desc(andel))
 
-# Undersöka om det finns fler NA än 1 per observation
+# ---- s1-fler-NA-per-observation
+
+gg_miss_upset(data_raw)
+
+# ---- s1-spara-ner-plotten-som-png
 
 png(
   filename = "output/eda/more_NA_per_obs.png",
@@ -49,36 +57,37 @@ gg_miss_upset(data_raw)
 
 dev.off()
 
-# Inkonsekvenser i datat, kategoriska variabler ----
+# ---- s1-inkonsekvenser-kategoriska-variabler
 
 data_raw %>%
   select(where(is.character), -customer_id) %>%
   pivot_longer(everything()) %>%
-  count(name, value) %>%
+  distinct(name, value) %>%
   group_by(name) %>%
   summarise(
     kategorier = paste(value, collapse = ", ")
   )
 
-# Inkonsekvenser i datat, numeriska variabler ----
+# ---- s1-inkonsekvenser-numeriska-variabler
 
 data_raw %>%
   select(where(is.numeric)) %>%
   summary()
 
-# Fördelning i datat, kategoriska variabler ----
+# ---- s1-fördelning-kategoriska-variabler
 
 data_raw %>%
   select(where(is.character), -customer_id) %>%
   pivot_longer(everything()) %>%
   count(name, value) %>%
   group_by(name) %>%
+  mutate(andel = n / sum(n) * 100) %>%
   arrange(desc(n), .by_group = TRUE) %>%
   print(n = Inf)
 
-# Fördelning och outliers i datat, numeriska variabler ----
+# ---- s1-fördelning-och-outliers-numeriska-variabler
 
-# Histogram
+# ---- s1-histogram
 
 hist_plot_eda <- data_raw %>%
   select(age, bmi, charges) %>%
@@ -94,13 +103,15 @@ hist_plot_eda <- data_raw %>%
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 
-# Visa och spara plotten
+# ---- s1-visa-histogram
 
 hist_plot_eda
 
+# ---- s1-spara-plotten
+
 ggsave("output/eda/hist_plot_eda.png", plot = hist_plot_eda, width = 6, height = 4)
 
-# Boxplot
+# ---- s1-boxplot
 
 box_plot_eda <- data_raw %>%
   select(age, bmi, charges) %>%
@@ -119,9 +130,11 @@ box_plot_eda <- data_raw %>%
         axis.ticks.x = element_blank()
   )
 
-# Visa och spara plotten
+# ---- s1-visa-boxplot
 
 box_plot_eda
+
+# ---- s1-spara plotten
 
 ggsave("output/eda/box_plot_eda.png", plot = box_plot_eda, width = 6, height = 4)
 

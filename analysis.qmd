@@ -1,0 +1,275 @@
+---
+title: "Analys av försäkringskostnader"
+author: "Josefin Oleryd"
+format: html
+---
+
+```{r setup}
+#| message: false
+#| warning: false
+#| echo: true
+
+library(knitr)
+library(tidyverse)
+library(naniar)
+library(ggcorrplot)
+library(modelsummary)
+library(broom)
+
+read_chunk("scripts/01_load_data.R")
+read_chunk("scripts/02_prepare_data.R")
+read_chunk("scripts/03_descriptive_analysis.R")
+read_chunk("scripts/04_regression_analysis.R")
+```
+
+Skriv kort om setup-blocket.
+
+## Inledning
+
+Skriv inledningstext här
+
+## Dataförståelse
+
+### Ladda in data
+
+```{r s1-ladda-data}
+
+```
+
+### Storlek, struktur och variabeltyper
+
+```{r s1-storlek-och-struktur}
+
+```
+
+Datasetet består av 1100 rader (observationer) och 14 kolumner.
+
+En rad är en kund.
+
+Kategoriska variabler:
+
+-   customer_id
+
+-   sex
+
+-   region
+
+-   smoker
+
+-   chronic_condition
+
+-   exercise_level
+
+-   plan_type
+
+Numeriska variabler:
+
+-   age
+
+-   bmi
+
+-   children
+
+-   prior_accidents
+
+-   prior_claims
+
+-   annual_checkups
+
+-   charges
+
+### Dubbletter
+
+#### Identiska rader
+
+```{r s1-identiska-rader}
+
+```
+
+duplicated() kollar vilka rader som är dubbletter och returnerar en logisk lista med TRUE och FALSE. sum() summerar alla värden i listan, men då TRUE = 1 och FALSE = 0 så är det antalet TRUE som blir resultatet. I det här fallet är antalet identiska rader 0.
+
+#### Förekommer samma kund flera gånger?
+
+```{r s1-förekommer-samma-kund-flera-gånger?}
+
+```
+
+count() räknar varje customer_id och lägger resultatet i en tabell med kolumnerna customer_id och n (antal). filter(n \> 1) tar sedan fram de rader där n är större än 1. Resultatet är en tibble med 0 rader, dvs samma customer_id finns inte med fler än en gång.
+
+#### Samma kunddata, men olika id:n
+
+```{r s1-identiska-rader-bortser-customer_id}
+
+```
+
+Här används duplicated() igen för att kolla vilka rader som är dubbletter, men customer_id är borträknat. Även här är resultatet en tom lista.
+
+Jag undersökte dubblerad data på tre sätt:
+
+1.  Identiska rader
+
+2.  Samma kund på flera ställen
+
+3.  Samma kund med olika id:n
+
+Dubbletter gör datan skev och inte lika tillförlitlig. Identiska rader är lätta att hantera: en av raderna tas bort. Om samma kund finns på flera ställen, antingen med samma id och olika data eller med exakt samma data fast olika id:n tyder detta på inkonsekvenser vid datalagringen. Detta går inte hantera utan att först kolla med den som äger systemet som datan kommer ifrån. Har en ny kund av misstag fått ett upptaget id? Har en gammal kund av misstag skapats igen? Eller är det mot all förmodan så att två separata individer har exakt samma värden i samtliga variabler? Detta kan ägaren till systemet svara på, men går det inte att få något svar får all duplicering tas bort.
+
+Som tur är innehåller detta dataset inga dubbletter.
+
+### Saknade värden
+
+```{r s1-saknade-värden}
+```
+
+summarise() skapar en sammanfattning av datasetet och resultatet blir en ny, mindre tabell.
+
+across() betyder "gör samma sak över flera kolumner" och det som ska göras är sum(is.na()), alltså summera alla NA.
+
+everything() gör så att funktionen körs på alla kolumner. Punkten i na(.) är en placeholder för varje kolumn.
+
+pivot_longer() gör om tabellen från "bred" till "lång". Utan pivot_longer() blir tabellen ungefär så här:
+
+|             |     |     |              |
+|-------------|-----|-----|--------------|
+| customer_id | bmi | age | prior_claims |
+| 0           | 3   | 0   | 2            |
+
+Men med pivot_longer() blir tabellen ännu mer sammanfattande:
+
+|              |       |
+|--------------|-------|
+| name         | value |
+| customer_id  | 0     |
+| bmi          | 3     |
+| age          | 0     |
+| prior_claims | 2     |
+
+Dvs att varje "orginalkolumn" hamnar i en ny kolumn "name" och antalet NA per kolumn hamnar i den nya kolumnen "value".
+
+mutate() skapar ytterligare en kolumn "andel" som beräknar andelen NA per variabel.
+
+arrange() sorterar tabellen så variabeln med högst andel saknade värden ligger överst.
+
+Resultatet blir som sagt en ny tabell och i det här fallet kan vi se att det finns NA i tre variabler: bmi, exercise_level och annual_checkups med totalt 70 NA. Dessa behöver hanteras i nästa del: Dataförberedelse.
+
+#### Finns det observationer med fler än en NA?
+
+Men är det 70 separata observationer som har NA:s eller finns det observationer som har NA i fler än en variabel?
+
+Det här är relevant att veta inför hanteringen av NA. Om man väljer att ta bort alla rader med NA är det 70 observationer som försvinner eller bara 5?
+
+```{r s1-fler-NA-per-observation}
+#| message: false
+#| warning: false
+#| echo: true
+```
+
+gg_miss_upset() är en funktion från paketet naniar. Det den gör är i princip samma sak som ovan - räknar saknade värden per kolumn och summerar - men gg_miss_upset() hittar också kombinationer av NA:s som förekommer tillsammans och ritar alltihopa i en snygg plot.
+
+Av figuren kan vi utläsa att endast en observation har fler än en NA och att de är i variablerna bmi och exercise_level som dessa sakande värden förekommer.
+
+Detta innebär att om NA:s hanteras genom radering så kommer 69 observationer försvinna.
+
+### Inkonsekvenser
+
+#### Kategoriska variabler
+
+```{r s1-inkonsekvenser-kategoriska-variabler}
+
+```
+
+select(where(is.character), -customer_id) väljer alla kategoriska variabler förutom customer_id (för den är inte av intresse)
+
+distinct() plockar ut alla unika värden ur både name (variabel) och value (kategorier inom variablerna). group_by() slår sedan ihop dem per kolumn.
+
+summarise() skapar en sammanfattande kolumn - "kategorier" - där alla värden i value slås ihop till en enda textsträng, där varje value separeras av ett kommatecken.
+
+Inkonsekvenser i kategoriska variabler är exempelvis olika stavningar för samma sak, eller att ett ord ibland börjar med stor bokstav och ibland med liten bokstav. I tabellen framgår det att dessa inkonsekvenser finns i datasetet och detta kommer hanteras i avsnittet "Datastädning".
+
+#### Numeriska variabler
+
+```{r s1-inkonsekvenser-numeriska-variabler}
+
+```
+
+För att få fram inkonsekvenser i de numeriska variablerna väljer jag att göra en summary() på data_raw, men bara på "is.numeric".
+
+Inkonsekvenser i numeriska variabler är exempelvis negativa tal på ställen där det inte är realistiskt möjlig, som exempelvis age, bmi eller annual_checkups. Orimligt höga värden är också inkonsekvenser. Än så länge finns det ingen människa äldre än 120 år eller som har ett bmi på över 180 (#JonBrowerMinnoch #Murica)
+
+Men den främsta användningen av summary() är att kolla datans fördelning, skevhet och outliers.
+
+-   Charges:
+
+    -   Medelvärdet högre än medianen. Tyder på högerskev fördelning.
+
+    -   Maxvärdet är mer än 2,5 gånger större än 3:e kvartilen. Tyder på outliers i den övre delen av spektrat.
+
+-   BMI:
+
+    -   Medelvärdet och medianen är nästan exakt lika stora. Tyder på normalfördelning.
+
+    -   1:a kvartilen börjar på 24,30 vilket innebär att 75 % av populationen ligger i kategorin övervikt eller fetma (BMI \> 25)
+
+-   Age:
+
+    -   Medelvärdet och medianen är nästan identiska. Tyder på normalfördelning.
+
+    -   Avståndet mellan kvartilerna är relativt konstant vilket innebär en jämn spridning mellan åldrarna
+
+### Fördelning
+
+#### Kategoriska variabler
+
+```{r s1-fördelning-kategoriska-variabler}
+
+```
+
+Inför analys är det alltid viktigt att veta hur stora de olika grupperna är.
+
+I den här tabellen kan vi exempelvis se att ungefär 25 % av populationen har ett kroniskt tillstånd och att fördelningen mellan män och kvinnor är jämn.
+
+#### Numeriska variabler
+
+```{r s1-histogram}
+```
+
+Här gör pivot_longer(everything()) att ggplot() kan rita alla tre variabler samtidigt. Alla värden från bmi, age och charges ligger i value.
+
+facet_wrap() skapar en separat graf för varje variabel i name.
+
+scales = "free" gör att varje graf får egna axelskalor vilket är ett måste eftersom charges innehåller så mycket större värden jämfört med age och bmi.
+
+theme_minimal() ger graferna ett enklare och renare utseende.
+
+element_text(hjust = 0.5) centrerar rubriken.
+
+```{r s1-visa-histogram}
+#| warning: false
+```
+
+Figuren bekräftar det vi misstänkte tidigare:
+
+-   Charges är högerskev med en tydlig svans av outliers vid höga värden.
+
+-   BMI följer en normalfördelning
+
+Men Age har en mer oregelbunden fördelning med flera toppar, en vid 35-40 och en vid 45-50 år. Detta tyder på en ojämn representation av åldersgrupper i datan.
+
+```{r s1-boxplot}
+```
+
+På samma sätt som med histogrammet plottas en facetterad boxplot.
+
+Då x-axeln inte är av intresse tas denna bort med axis.text.x = blank och axis.ticks.x = blank.
+
+```{r s1-visa-boxplot}
+#| warning: false
+```
+
+Figuren bekräftar att det finns flertalet outliers inom Charges. Många runt 25 000, men även en över 30 000. Boxploten bekräftar också att fördelningen är högerskev. Detta ser vi då boxen ligger långt ner i förhållande till maxvärdet.
+
+För BMI syns nu tydligt att det finns några outliers i det övre spannet, men för övrigt är fördeningen inom BMI symmetrisk.
+
+Age har inga outliers och boxen är stor och centralt placerad vilket visar på bra spridning av observationer i åldrarna 35-50 år.
+
+## Datastädning och förberedelse
