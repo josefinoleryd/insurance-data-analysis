@@ -1,14 +1,16 @@
+# ---- s2-ladda-in-paket-och-source
+
 source("scripts/01_load_data.R")
 library(tidyverse)
 
-# Funktion för att hitta typvärdet (mode) ----
+# ---- s2-funktion-för-typvärde
 
 get_mode <- function(x) {
   ux <- unique(na.omit(x))
   ux[which.max(tabulate(match(x, ux)))]
 }
 
-# Städa och Feature Engineering i samma pipe ----
+# ---- s2-städa-och-feature-engineering
 
 data_clean <- data_raw %>%
   mutate(
@@ -64,7 +66,15 @@ data_clean <- data_raw %>%
 ) %>%
   select(-smoker_logic, -chronic_condition_logic)
 
+# ---- kontrollera-att-det-blev-korrekt
+
 glimpse(data_clean)
-summary(data_clean)
-str(data_clean)
+
+data_clean %>%
+  select(where(is.numeric)) %>%
+  summary()
+
+data_clean %>%
+  select(where(is.factor)) %>%
+  summary()
          

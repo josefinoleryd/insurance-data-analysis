@@ -1,8 +1,10 @@
+# ---- s3-ladda-in-paket-och-source
+
 source("scripts/02_prepare_data.R")
 library(tidyverse)
 library(ggcorrplot)
 
-# Skapa korrelationsmatris för att se intressanta variabler ----
+# ---- s3-skapa-korrelationsmatris
 
 numeric_vars <- data_clean %>%
   select(age, bmi, prior_accidents, prior_claims, annual_checkups, prior_events, risk_score, charges)
@@ -19,9 +21,12 @@ corr_plot <- ggcorrplot(cor_matrix,
   theme(plot.title = element_text(hjust = 0.5))
 
 corr_plot
+
+# ---- s3-spara-plotten
+
 ggsave("output/analysis/corr_plot.png", plot = corr_plot, width = 7, height = 7)
 
-# Boxplots grupper med olika hälsorisker och livsstilar ----
+# ---- s3-boxplot-hälsorisker-och-livsstilar
 
 health_risk_plot <- data_clean %>%
   select(charges, smoker, chronic_condition, bmi_category, risk_score) %>%
@@ -50,9 +55,12 @@ health_risk_plot <- data_clean %>%
   )
 
 health_risk_plot
+
+# ---- s3-spara-plotten
+
 ggsave("output/analysis/health_risk_plot.png", plot = health_risk_plot, width = 7, height = 7)
 
-# Boxplots demografiska grupper ----
+# ---- s3-boxplot-demografiska-grupper
 
 demographic_plot <- data_clean %>%
   select(charges, age_category, sex) %>%
@@ -80,10 +88,13 @@ demographic_plot <- data_clean %>%
   )
 
 demographic_plot
+
+# ---- s3-spara-plotten
+
 ggsave("output/analysis/demographic_plot.png", plot = demographic_plot, width = 7, height = 7)
 
 
-# Stapeldiagram över genomsnittlig kostnad per Risk Score ----
+# ---- s3-stapeldiagram-genomsnittlig-kostnad-per-risk_score
 
 # Skapa sammanfattande tabell
 
@@ -119,4 +130,7 @@ risk_summary_plot <- risk_score_summary %>%
   )
 
 risk_summary_plot
+
+# ---- s3-spara-plotten
+
 ggsave("output/analysis/risk_summary_plot.png", plot = risk_summary_plot, width = 7, height = 7)

@@ -273,3 +273,97 @@ För BMI syns nu tydligt att det finns några outliers i det övre spannet, men 
 Age har inga outliers och boxen är stor och centralt placerad vilket visar på bra spridning av observationer i åldrarna 35-50 år.
 
 ## Datastädning och förberedelse
+
+### Funktion för att få typvärdet (mode)
+
+```{r s2-funktion-för-typvärde}
+
+```
+
+I föregående avsnitt upptäckte vi att exercise_level innehöll 22 NA:n och att 22 observationer motsvarar 2 % av hela datan. Vi kunde också se att exercise_level bestod av 3 kategorier: low, medium och high med en rimlig fördelning inom kategorierna (low = 307, medium = 561 och high = 210 observationer).
+
+Eftersom datasetet redan är litet är jag motvillig att ta bort något. Eftersom kategorin medium redan var så stor valde jag att ersätta alla saknade värden i exercise_level med det vanligaste, medium. Men för att göra koden säker inför framtiden då datan kan ändras skapade jag en funktion som tar fram det vanligaste värdet (mode) istället för att hårdkoda.
+
+### Städa och feature engineering i samma pipe
+
+```{r s2-städa-och-feature-engineering}
+
+```
+
+Följande städning görs (med utgångspunkt i det som tidigare avsnitt visade):
+
+-   Alla kategoriska variabler standardiseras, dvs alla mellanslag tas bort och alla bokstäver görs om till gemener
+
+-   Saknade värden i bmi och annual_checkups ersätts med medianvärdet då detta inte "skjuter" datan åt ett specifikt håll. exercise_level NA:ns ersätts som sagt med det vanligaste värdet mha av funktionen get_mode.
+
+Skapande av nya variabler, val och motivering:
+
+-   bmi_category och age_category
+
+    -   kategorier ger minskat brus och fångar tröskeleffekter: slumpmässiga variationer mellan exempelvis en 66-åring och 68-åring eller mellan ett bmi på 21 och ett bmi på 23 försvinner när observationerna grupperas, och ger istället en tydligare struktur som är lättare att tolka.
+
+    -   bmi_category följer WHO:s etablerade standarder
+
+-   prior_events
+
+    -   prior_accidents och prior_claims säger egentligen samma sak ("saker som gör att kunden kostar pengar"), och om variabler korrelerar för mycket med varandra kan det störa vissa statistiska modeller
+
+    -   dessa enskilda variabler innehöll rätt mycket gles data (många 0) och att kombinera dem ger då en variabel med mer variation (mer signal) som gör det lättare för modeller att hitta mönster
+
+-   risk_score
+
+    -   både rökning, högt bmi och kroniskt tillstånd är risker så precis som med prior_accidents och prior_claims bör dessa hanteras tillsammans och inte var för sig
+
+    -   risk_score ger en bra gruppering av observationerna som är lätt att använda i försäkringssammanhang
+
+risk_score skapas genom att smoker, chronic_condition och bmi vardera kan ge 1 poäng:
+
+-   smoker_yes = 1 poäng (annars 0)
+
+-   chronic_condition_yes = 1 poäng (annars 0)
+
+-   bmi över 30 = 1 poäng (annars 0)
+
+Kategoriska variabler –\> faktorer
+
+Alla de kateogriska variablerna i datasetet (+ de nyskapade variablerna age_category och bmi_category) kan användas för att gruppera datan på olika sätt. Därför valde jag att göra dem till faktorer för att förenkla både presentationen samt användningen av dem i regressionsanalysen. En faktor går att rangordna med "levels" och då blir det automatiskt vad som är "normalläget" och vad som är "ökningen" (dvs vad händer med kostnaden om en person går från normalläget normal weight till overweight?).
+
+Kategorierna hamnar även i korrekt ordning i grafer och tabeller, istället för default bokstavsordning.
+
+Men för att smoker och chronic_condition ska kunna användas för att skapa risk_score behövde de först göras om till logiska variabler så att yes/TRUE = 1 och no/FALSE = 0.
+
+Alla kategoriska variabler görs därför om till faktorer först i slutet av pipen.
+
+### Kontroll att det blev som det skulle
+
+```{r kontrollera-att-det-blev-korrekt}
+
+```
+
+Ser snyggt ut!
+
+## Beskrivande analys
+
+### Korrelationsmatris
+
+```{r s3-skapa-korrelationsmatris}
+
+```
+
+### Hälsorisker och livsstilar
+
+```{r s3-boxplot-hälsorisker-och-livsstilar}
+
+```
+
+### Demografiska grupper
+
+```{r s3-boxplot-demografiska-grupper}
+
+```
+
+### Genomsnittlig kostnad per Risk Score
+
+```{r s3-stapeldiagram-genomsnittlig-kostnad-per-risk_score}
+
+```
