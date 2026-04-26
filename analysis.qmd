@@ -1,7 +1,9 @@
 ---
 title: "Analys av försäkringskostnader"
 author: "Josefin Oleryd"
-format: html
+format: 
+  html:
+    code-overflow: wrap
 ---
 
 ```{r setup}
@@ -162,6 +164,9 @@ Det här är relevant att veta inför hanteringen av NA. Om man väljer att ta b
 #| message: false
 #| warning: false
 #| echo: true
+#| fig-width: 10
+#| fig-height: 8
+#| out-width: "100%"
 ```
 
 gg_miss_upset() är en funktion från paketet naniar. Det den gör är i princip samma sak som ovan - räknar saknade värden per kolumn och summerar - men gg_miss_upset() hittar också kombinationer av NA:s som förekommer tillsammans och ritar alltihopa i en snygg plot.
@@ -245,6 +250,9 @@ element_text(hjust = 0.5) centrerar rubriken.
 
 ```{r s1-visa-histogram}
 #| warning: false
+#| fig-width: 10
+#| fig-height: 8
+#| out-width: "100%"
 ```
 
 Figuren bekräftar det vi misstänkte tidigare:
@@ -264,6 +272,9 @@ Då x-axeln inte är av intresse tas denna bort med axis.text.x = blank och axis
 
 ```{r s1-visa-boxplot}
 #| warning: false
+#| fig-width: 10
+#| fig-height: 8
+#| out-width: "100%"
 ```
 
 Figuren bekräftar att det finns flertalet outliers inom Charges. Många runt 25 000, men även en över 30 000. Boxploten bekräftar också att fördelningen är högerskev. Detta ser vi då boxen ligger långt ner i förhållande till maxvärdet.
@@ -334,7 +345,7 @@ Men för att smoker och chronic_condition ska kunna användas för att skapa ris
 
 Alla kategoriska variabler görs därför om till faktorer först i slutet av pipen.
 
-### Kontroll att det blev som det skulle
+### Kontroll att det blev som det skulle när jag gjorde som jag gjorde
 
 ```{r kontrollera-att-det-blev-korrekt}
 
@@ -350,11 +361,81 @@ Ser snyggt ut!
 
 ```
 
-### Hälsorisker och livsstilar
+cor() skapar en korrelationsmatris över de numeriska variabler valda i steget innan (select()).
 
-```{r s3-boxplot-hälsorisker-och-livsstilar}
+Sedan används funktionen ggcorrplot() från paketet ggcorrplot för att enkelt plotta korrelationsmatrisen.
+
+```{r s3-visa-korrelationsmatris}
+#| fig-width: 10
+#| fig-height: 8
+#| out-width: "100%"
+```
+
+Jag valde att börja den beskrivande analysen med en korrelationsmatris som är ett snabbt och enkelt sätt att få en överblick över linjära samband inför regressionsanalysen.
+
+Korrelationsmatrisen blev ett bra bevis på att det var en god idé att skapa variabeln risk_score och att behålla den som en numerisk variabel. Som numerisk variabel kan den vara med i en korrelationsmatris!
+
+charges och risk_score har en stark korrelation (0.69) medan endast bmi ger en låg korrelation (0.15) vilket är ett gott tecken på att även smoker och chronic_condition är intressanta i en regressionsanalys. Att bmi och risk_score har en medelhög korrelation (0.44) tyder på att bmi har sin förtjänade plats i risk_score.
+
+charges och age har en måttlig korrelation (0.26), men som tredje "bästa" korrelation är age också en intressant variabel.
+
+Korrelationsmatrisen visar också att det var en bra idé att slå ihop prior_claims och prior_accidents då prior_events har en högre korrelation (0.27) jämfört med claims och accidents separat (0.18 resp. 0.24).
+
+annual_checkups har mycket låg korrelation och är därför inte av intresse.
+
+### Hälsorisker och livsstil
+
+För att se hur kostnaden ser ut inom grupperna, men också mellan grupperna, väljer jag att slå två flugor i en smäll och visuallisera detta med boxplots.
+
+Med hjälp av korrelationsmatrisen har jag kommit fram till att de intressanta variablerna är:
+
+-   risk_score
+
+-   smoker
+
+-   chronic_condition
+
+-   bmi_category
+
+-   age_category
+
+-   prior_events
+
+Dessa variabler delar naturligt upp observationerna i lämpliga grupper (förutom prior_events, såklart, som är numerisk) och jag väljer att dela upp dem i två kategorier:
+
+1.  Hälsorisker och livsstil: risk_score, smoker, chronic_condition och bmi_category
+
+2.  Demografiska grupper: age_category och här får även sex vara med
+
+```{r s3-boxplot-hälsorisker-och-livsstil}
 
 ```
+
+mutate(across(-charges, as.character)) ändrar alla variabler förutom charges till text (charges förblir numeric eftersom charges kommer ligga på y-axeln). Varför? För att jag använder pivot_longer() som behöver ha alla variabler i samma format. Varför pivot_longer? För att det ska gå enkelt att plotta flera små boxplots i samma figur.
+
+När variablerna görs om till character försvinner "inställningarna" de fick när jag i script 02 gjorde om dem till faktorer. Så för att alla kategorier ska hamna i korrekt ordning igen behövs mutate(value = factor()) osv.
+
+```{r s3-visa-health_risk_plot}
+#| fig-width: 10
+#| fig-height: 8
+#| out-width: "100%"
+```
+
+#### bmi_category
+
+-   skillnaden mellan underweight och normal är relativt liten, lika så mellan overweight och obese. Dock har obese en högre median samt fler outliers.
+
+#### chronic_condition
+
+-   individer med kroniska tillstånd har mycket högre mediankostnad. Nästan hela boxen ligger förskjuten ovanför "no", vilket innebär att även de "billigaste" fallen med kroniska tillstånd ofta kostar mer än genomsnitten för dem utan.
+
+#### risk_score
+
+-   för varje steg i risk_score hoppar mediankostnaden kraftigt uppåt. Grupp 3 har en kompakt och högt placerad box, vilket tyder på att högt risk_score ger nästan uteslutande höga kostnader med liten variation.
+
+#### smoker
+
+-   rökare har betydligt högre mediankostnad än icke-rökare. Gruppen icke-rökare har dock många outliers i det övre spannet vilket tyder på att även om rökning ger högre kostnader, så finns det andra faktorer som driver upp kostnaden för icke-rökare.
 
 ### Demografiska grupper
 
@@ -362,8 +443,56 @@ Ser snyggt ut!
 
 ```
 
+```{r s3-visa-demographic_plot}
+#| fig-width: 10
+#| fig-height: 8
+#| out-width: "100%"
+```
+
+#### age_category
+
+-   tydlig uppåtgående trend där mediankostnaden stiger linjärt från young till senior. Boxen för senior är större (större interkvartilavstånd) än boxarna för både young och middle-age, vilket betyder att kostnaderna för seniorer varierar mer från person till person. Både gruppen young och gruppen middle-age har många fler outliers än seniorerna och detta pekar på att andra faktorer än åldern driver upp kostnaderna.
+
+#### sex
+
+-   skillnaden är minimal mellan män och kvinnor (hurra för jämställdhet!). Medianerna ligger nästan på samma nivå, det är nästan samma spridning inom de båda grupperna och de ser ut att ha lika många outliers, även om spridningen på extremvärdena ser olika ut mellan grupperna.
+
 ### Genomsnittlig kostnad per Risk Score
+
+Jag rundar av den beskrivande analysen med att undersöka de faktiska kostnaderna för varje risk_score-grupp genom att rita ett stapeldiagram över medel- och mediankostnad.
+
+Visar diagrammet på ett linjärt förhållande (dvs att det är jämna och fina hopp mellan varje risk_score) bekräftar det mitt val att behålla risk_score som numerisk. risk_score = numerisk medför att varje +1 steg är värt lika mycket och ett stapeldiagram över medelvärdet visar hur stor skillanden är varje +1 steg.
+
+Om diagrammet inte visar på ett linjärt förhållande utan medelvärdet snarare sticker i höjden för risk_score 3 innebär detta att jag bör fundera på att göra om risk_score till en faktor innan regressionsanalysen. Detta för att fånga upp det icke-linjära sambandet mellan riskgrupperna.
 
 ```{r s3-stapeldiagram-genomsnittlig-kostnad-per-risk_score}
 
 ```
+
+Även här används pivot_longer() för att ggplot() lättare ska kunna plotta det jag vill (två staplar per riskgrupp).
+
+x = factor(risk_score) betyder att x-axeln ska visa risk_score som kategorier (vilket annars gör det svårt för ggplot() att få staplarna snygga bredvid varandra).
+
+fill = Statistiktyp: färgen på staplarna bestäms av om det är medelvärde eller median.
+
+geom_col() används när det finns färdiga y-värden (dvs "Kostnad").
+
+position = "dodge" gör att staplarna hamnar bredvid och inte på varandra.
+
+geom_text() lägger till texten ovanpå staplarna.
+
+scale_fill_manual() används för att bestämma vilken färg det ska vara på staplarna (dvs vilken färg får medelvärdet resp. medianvärdet?)
+
+```{r s3-visa-risk_summary_plot}
+#| fig-width: 10
+#| fig-height: 8
+#| out-width: "100%"
+```
+
+Diagrammet visar tillräckligt mycket på ett linjärt samband för att jag ska kunna försvara mitt val att behålla risk_score som numerisk. Även om man kan ana en liten extra ökning på slutet mellan Risk 2 och Risk 3. Dock inte tillräckligt för att få mig att ändra mig.
+
+Medelvärde och median ligger nära varandra inom varje grupp vilket tyder på att kostnaderna inte verkar vara extremt snedfördelade inom grupperna.
+
+Riskgrupp 1 (och även riskgrupp 0, marginellt) har ett något högre medelvärde jämfört med medianvärde vilket innebär att några individer i den här gruppen drar upp snittet. Vilket i sin tur kan innebära att risk_score ensamt inte förklarar charges.
+
+På samma sätt innebär ett högre medianvärde jämfört med medelvärde (dvs att några individer drar ner snittet) i grupp 2 och 3 att risk_score inte förklarar alla kostnadsskillnader.

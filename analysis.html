@@ -70,7 +70,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="analysis_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="analysis_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="analysis_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="analysis_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="analysis_files/libs/bootstrap/bootstrap-0df8dfdce555b5e457e6102d33c50900.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -313,7 +313,7 @@ $ charges           &lt;dbl&gt; 6439.10, 8274.06, 5190.99, 14500.35, 6534.40, 80
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis_files/figure-html/s1-fler-NA-per-observation-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis_files/figure-html/s1-fler-NA-per-observation-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
@@ -472,7 +472,7 @@ $ charges           &lt;dbl&gt; 6439.10, 8274.06, 5190.99, 14500.35, 6534.40, 80
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis_files/figure-html/s1-visa-histogram-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis_files/figure-html/s1-visa-histogram-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
@@ -508,7 +508,7 @@ $ charges           &lt;dbl&gt; 6439.10, 8274.06, 5190.99, 14500.35, 6534.40, 80
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis_files/figure-html/s1-visa-boxplot-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis_files/figure-html/s1-visa-boxplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
@@ -624,8 +624,8 @@ $ charges           &lt;dbl&gt; 6439.10, 8274.06, 5190.99, 14500.35, 6534.40, 80
 <p>Men för att smoker och chronic_condition ska kunna användas för att skapa risk_score behövde de först göras om till logiska variabler så att yes/TRUE = 1 och no/FALSE = 0.</p>
 <p>Alla kategoriska variabler görs därför om till faktorer först i slutet av pipen.</p>
 </section>
-<section id="kontroll-att-det-blev-som-det-skulle" class="level3">
-<h3 class="anchored" data-anchor-id="kontroll-att-det-blev-som-det-skulle">Kontroll att det blev som det skulle</h3>
+<section id="kontroll-att-det-blev-som-det-skulle-när-jag-gjorde-som-jag-gjorde" class="level3">
+<h3 class="anchored" data-anchor-id="kontroll-att-det-blev-som-det-skulle-när-jag-gjorde-som-jag-gjorde">Kontroll att det blev som det skulle när jag gjorde som jag gjorde</h3>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(data_clean)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -700,33 +700,53 @@ $ risk_score        &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 
 <section id="korrelationsmatris" class="level3">
 <h3 class="anchored" data-anchor-id="korrelationsmatris">Korrelationsmatris</h3>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>numeric_vars <span class="ot">&lt;-</span> data_clean <span class="sc">%&gt;%</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(age, bmi, prior_accidents, prior_claims, annual_checkups, prior_events, risk_score, charges)</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(numeric_vars)</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>corr_plot <span class="ot">&lt;-</span> <span class="fu">ggcorrplot</span>(cor_matrix,</span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">type =</span> <span class="st">"upper"</span>,</span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">lab =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">lab_size =</span> <span class="dv">3</span>,</span>
-<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">"#E4672E"</span>, <span class="st">"white"</span>, <span class="st">"#6D9EC1"</span>),</span>
-<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>                     <span class="at">title =</span> <span class="st">"Korrelation mellan variabler och försäkringskostnad (charges)"</span>,</span>
-<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>                     <span class="at">ggtheme =</span> <span class="fu">theme_minimal</span>()) <span class="sc">+</span></span>
-<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span>
-<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>corr_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>corr_plot <span class="ot">&lt;-</span> data_clean <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(age, bmi, prior_accidents, prior_claims, annual_checkups, prior_events, risk_score, charges) <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cor</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggcorrplot</span>(<span class="at">type =</span> <span class="st">"upper"</span>,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">lab =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">lab_size =</span> <span class="dv">3</span>,</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">colors =</span> <span class="fu">c</span>(<span class="st">"#E4672E"</span>, <span class="st">"white"</span>, <span class="st">"#6D9EC1"</span>),</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">title =</span> <span class="st">"Korrelation mellan variabler och försäkringskostnad (charges)"</span>,</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">ggtheme =</span> <span class="fu">theme_minimal</span>()) <span class="sc">+</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>cor() skapar en korrelationsmatris över de numeriska variabler valda i steget innan (select()).</p>
+<p>Sedan används funktionen ggcorrplot() från paketet ggcorrplot för att enkelt plotta korrelationsmatrisen.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>corr_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis_files/figure-html/s3-skapa-korrelationsmatris-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis_files/figure-html/s3-visa-korrelationsmatris-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"output/analysis/corr_plot.png"</span>, <span class="at">plot =</span> corr_plot, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">7</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>Jag valde att börja den beskrivande analysen med en korrelationsmatris som är ett snabbt och enkelt sätt att få en överblick över linjära samband inför regressionsanalysen.</p>
+<p>Korrelationsmatrisen blev ett bra bevis på att det var en god idé att skapa variabeln risk_score och att behålla den som en numerisk variabel. Som numerisk variabel kan den vara med i en korrelationsmatris!</p>
+<p>charges och risk_score har en stark korrelation (0.69) medan endast bmi ger en låg korrelation (0.15) vilket är ett gott tecken på att även smoker och chronic_condition är intressanta i en regressionsanalys. Att bmi och risk_score har en medelhög korrelation (0.44) tyder på att bmi har sin förtjänade plats i risk_score.</p>
+<p>charges och age har en måttlig korrelation (0.26), men som tredje “bästa” korrelation är age också en intressant variabel.</p>
+<p>Korrelationsmatrisen visar också att det var en bra idé att slå ihop prior_claims och prior_accidents då prior_events har en högre korrelation (0.27) jämfört med claims och accidents separat (0.18 resp. 0.24).</p>
+<p>annual_checkups har mycket låg korrelation och är därför inte av intresse.</p>
 </section>
-<section id="hälsorisker-och-livsstilar" class="level3">
-<h3 class="anchored" data-anchor-id="hälsorisker-och-livsstilar">Hälsorisker och livsstilar</h3>
+<section id="hälsorisker-och-livsstil" class="level3">
+<h3 class="anchored" data-anchor-id="hälsorisker-och-livsstil">Hälsorisker och livsstil</h3>
+<p>För att se hur kostnaden ser ut inom grupperna, men också mellan grupperna, väljer jag att slå två flugor i en smäll och visuallisera detta med boxplots.</p>
+<p>Med hjälp av korrelationsmatrisen har jag kommit fram till att de intressanta variablerna är:</p>
+<ul>
+<li><p>risk_score</p></li>
+<li><p>smoker</p></li>
+<li><p>chronic_condition</p></li>
+<li><p>bmi_category</p></li>
+<li><p>age_category</p></li>
+<li><p>prior_events</p></li>
+</ul>
+<p>Dessa variabler delar naturligt upp observationerna i lämpliga grupper (förutom prior_events, såklart, som är numerisk) och jag väljer att dela upp dem i två kategorier:</p>
+<ol type="1">
+<li><p>Hälsorisker och livsstil: risk_score, smoker, chronic_condition och bmi_category</p></li>
+<li><p>Demografiska grupper: age_category och här får även sex vara med</p></li>
+</ol>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>health_risk_plot <span class="ot">&lt;-</span> data_clean <span class="sc">%&gt;%</span></span>
 <span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(charges, smoker, chronic_condition, bmi_category, risk_score) <span class="sc">%&gt;%</span></span>
@@ -752,18 +772,44 @@ $ risk_score        &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 
 <span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Kostnadsskillnader baserat på hälso- och riskfaktorer"</span>,</span>
 <span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Kategori"</span>,</span>
 <span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Kostnad (charges)"</span></span>
-<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a>health_risk_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>mutate(across(-charges, as.character)) ändrar alla variabler förutom charges till text (charges förblir numeric eftersom charges kommer ligga på y-axeln). Varför? För att jag använder pivot_longer() som behöver ha alla variabler i samma format. Varför pivot_longer? För att det ska gå enkelt att plotta flera små boxplots i samma figur.</p>
+<p>När variablerna görs om till character försvinner “inställningarna” de fick när jag i script 02 gjorde om dem till faktorer. Så för att alla kategorier ska hamna i korrekt ordning igen behövs mutate(value = factor()) osv.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>health_risk_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis_files/figure-html/s3-boxplot-hälsorisker-och-livsstilar-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis_files/figure-html/s3-visa-health_risk_plot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"output/analysis/health_risk_plot.png"</span>, <span class="at">plot =</span> health_risk_plot, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">7</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<section id="bmi_category" class="level4">
+<h4 class="anchored" data-anchor-id="bmi_category">bmi_category</h4>
+<ul>
+<li>skillnaden mellan underweight och normal är relativt liten, lika så mellan overweight och obese. Dock har obese en högre median samt fler outliers.</li>
+</ul>
+</section>
+<section id="chronic_condition" class="level4">
+<h4 class="anchored" data-anchor-id="chronic_condition">chronic_condition</h4>
+<ul>
+<li>individer med kroniska tillstånd har mycket högre mediankostnad. Nästan hela boxen ligger förskjuten ovanför “no”, vilket innebär att även de “billigaste” fallen med kroniska tillstånd ofta kostar mer än genomsnitten för dem utan.</li>
+</ul>
+</section>
+<section id="risk_score" class="level4">
+<h4 class="anchored" data-anchor-id="risk_score">risk_score</h4>
+<ul>
+<li>för varje steg i risk_score hoppar mediankostnaden kraftigt uppåt. Grupp 3 har en kompakt och högt placerad box, vilket tyder på att högt risk_score ger nästan uteslutande höga kostnader med liten variation.</li>
+</ul>
+</section>
+<section id="smoker" class="level4">
+<h4 class="anchored" data-anchor-id="smoker">smoker</h4>
+<ul>
+<li>rökare har betydligt högre mediankostnad än icke-rökare. Gruppen icke-rökare har dock många outliers i det övre spannet vilket tyder på att även om rökning ger högre kostnader, så finns det andra faktorer som driver upp kostnaden för icke-rökare.</li>
+</ul>
+</section>
 </section>
 <section id="demografiska-grupper" class="level3">
 <h3 class="anchored" data-anchor-id="demografiska-grupper">Demografiska grupper</h3>
@@ -791,21 +837,36 @@ $ risk_score        &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 
 <span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Kostnadsskillnader baserat på ålder och kön"</span>,</span>
 <span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Kategori"</span>,</span>
 <span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Kostnad (charges)"</span></span>
-<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>demographic_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>demographic_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis_files/figure-html/s3-boxplot-demografiska-grupper-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis_files/figure-html/s3-visa-demographic_plot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"output/analysis/demographic_plot.png"</span>, <span class="at">plot =</span> demographic_plot, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">7</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<section id="age_category" class="level4">
+<h4 class="anchored" data-anchor-id="age_category">age_category</h4>
+<ul>
+<li>tydlig uppåtgående trend där mediankostnaden stiger linjärt från young till senior. Boxen för senior är större (större interkvartilavstånd) än boxarna för både young och middle-age, vilket betyder att kostnaderna för seniorer varierar mer från person till person. Både gruppen young och gruppen middle-age har många fler outliers än seniorerna och detta pekar på att andra faktorer än åldern driver upp kostnaderna.</li>
+</ul>
+</section>
+<section id="sex" class="level4">
+<h4 class="anchored" data-anchor-id="sex">sex</h4>
+<ul>
+<li>skillnaden är minimal mellan män och kvinnor (hurra för jämställdhet!). Medianerna ligger nästan på samma nivå, det är nästan samma spridning inom de båda grupperna och de ser ut att ha lika många outliers, även om spridningen på extremvärdena ser olika ut mellan grupperna.</li>
+</ul>
+</section>
 </section>
 <section id="genomsnittlig-kostnad-per-risk-score" class="level3">
 <h3 class="anchored" data-anchor-id="genomsnittlig-kostnad-per-risk-score">Genomsnittlig kostnad per Risk Score</h3>
+<p>Jag rundar av den beskrivande analysen med att undersöka de faktiska kostnaderna för varje risk_score-grupp genom att rita ett stapeldiagram över medel- och mediankostnad.</p>
+<p>Visar diagrammet på ett linjärt förhållande (dvs att det är jämna och fina hopp mellan varje risk_score) bekräftar det mitt val att behålla risk_score som numerisk. risk_score = numerisk medför att varje +1 steg är värt lika mycket och ett stapeldiagram över medelvärdet visar hur stor skillanden är varje +1 steg.</p>
+<p>Om diagrammet inte visar på ett linjärt förhållande utan medelvärdet snarare sticker i höjden för risk_score 3 innebär detta att jag bör fundera på att göra om risk_score till en faktor innan regressionsanalysen. Detta för att fånga upp det icke-linjära sambandet mellan riskgrupperna.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Skapa sammanfattande tabell</span></span>
 <span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -846,18 +907,22 @@ $ risk_score        &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 
 <span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Risk score (0-3)"</span>,</span>
 <span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Kostnad (charges)"</span>,</span>
 <span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"Mått"</span></span>
-<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>risk_summary_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>risk_summary_plot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="analysis_files/figure-html/s3-stapeldiagram-genomsnittlig-kostnad-per-risk_score-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="analysis_files/figure-html/s3-visa-risk_summary_plot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"output/analysis/risk_summary_plot.png"</span>, <span class="at">plot =</span> risk_summary_plot, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">7</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>Diagrammet visar tillräckligt mycket på ett linjärt samband för att jag ska kunna försvara mitt val att behålla risk_score som numerisk. Även om man kan ana en liten extra ökning på slutet mellan Risk 2 och Risk 3. Dock inte tillräckligt för att få mig att ändra mig.</p>
+<p>Medelvärde och median ligger nära varandra inom varje grupp vilket tyder på att kostnaderna inte verkar vara extremt snedfördelade inom grupperna.</p>
+<p>Riskgrupp 1 (och även riskgrupp 0, marginellt) har ett något högre medelvärde jämfört med medianvärde vilket innebär att några individer i den här gruppen drar upp snittet. Vilket i sin tur kan innebära att risk_score ensamt inte förklarar charges.</p>
+<p>På samma sätt innebär ett högre medianvärde jämfört med medelvärde (dvs att några individer drar ner snittet) i grupp 2 och 3 att risk_score inte förklarar alla kostnadsskillnader.</p>
 </section>
 </section>
 

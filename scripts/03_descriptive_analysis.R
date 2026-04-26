@@ -6,19 +6,18 @@ library(ggcorrplot)
 
 # ---- s3-skapa-korrelationsmatris
 
-numeric_vars <- data_clean %>%
-  select(age, bmi, prior_accidents, prior_claims, annual_checkups, prior_events, risk_score, charges)
-
-cor_matrix <- cor(numeric_vars)
-
-corr_plot <- ggcorrplot(cor_matrix,
-                     type = "upper",
-                     lab = TRUE,
-                     lab_size = 3,
-                     colors = c("#E4672E", "white", "#6D9EC1"),
-                     title = "Korrelation mellan variabler och försäkringskostnad (charges)",
-                     ggtheme = theme_minimal()) +
+corr_plot <- data_clean %>%
+  select(age, bmi, prior_accidents, prior_claims, annual_checkups, prior_events, risk_score, charges) %>%
+  cor() %>%
+  ggcorrplot(type = "upper",
+             lab = TRUE,
+             lab_size = 3,
+             colors = c("#E4672E", "white", "#6D9EC1"),
+             title = "Korrelation mellan variabler och försäkringskostnad (charges)",
+             ggtheme = theme_minimal()) +
   theme(plot.title = element_text(hjust = 0.5))
+
+# ---- s3-visa-korrelationsmatris
 
 corr_plot
 
@@ -26,7 +25,7 @@ corr_plot
 
 ggsave("output/analysis/corr_plot.png", plot = corr_plot, width = 7, height = 7)
 
-# ---- s3-boxplot-hälsorisker-och-livsstilar
+# ---- s3-boxplot-hälsorisker-och-livsstil
 
 health_risk_plot <- data_clean %>%
   select(charges, smoker, chronic_condition, bmi_category, risk_score) %>%
@@ -53,6 +52,8 @@ health_risk_plot <- data_clean %>%
     x = "Kategori",
     y = "Kostnad (charges)"
   )
+
+# ---- s3-visa-health_risk_plot
 
 health_risk_plot
 
@@ -86,6 +87,8 @@ demographic_plot <- data_clean %>%
     x = "Kategori",
     y = "Kostnad (charges)"
   )
+
+# ---- s3-visa-demographic_plot
 
 demographic_plot
 
@@ -128,6 +131,8 @@ risk_summary_plot <- risk_score_summary %>%
     y = "Kostnad (charges)",
     fill = "Mått"
   )
+
+# ---- s3-visa-risk_summary_plot
 
 risk_summary_plot
 
