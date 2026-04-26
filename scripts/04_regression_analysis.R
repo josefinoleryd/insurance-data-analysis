@@ -1,14 +1,14 @@
+# ---- s4-ladda-in-paket-och-source
+
 source("scripts/03_descriptive_analysis.R")
 library(tidyverse)
 library(modelsummary)
 library(webshot2)
 library(broom)
 
+# ---- s4-scatterplots-intressanta-kontinuerliga-variabler
 
-
-# Börjar med scatterplots över interessanta kontinuerliga variabler ----
-
-# age
+# ---- s4-age
 
 scatter_age <- ggplot(data_clean, aes(x = age, y = charges)) +
   geom_point(
@@ -29,13 +29,15 @@ scatter_age <- ggplot(data_clean, aes(x = age, y = charges)) +
     y = "Kostnad (charges)"
   )
 
-# Visa och spara plotten
+# ---- s4-visa-plotten-age 
 
 scatter_age
 
+# ---- s4-spara-plotten-age
+
 ggsave("output/regression/scatter_age.png", plot = scatter_age, width = 7, height = 5)
 
-# bmi
+# ---- s4-bmi
 
 scatter_bmi <- ggplot(data_clean, aes(x = bmi, y = charges)) +
   geom_point(
@@ -56,15 +58,18 @@ scatter_bmi <- ggplot(data_clean, aes(x = bmi, y = charges)) +
     y = "Kostnad (charges)"
   )
 
-# Visa och spara plotten
+# ---- s4-visa-plotten-bmi
 
 scatter_bmi
+
+# ---- s4-spara-plotten-bmi
 
 ggsave("output/regression/scatter_bmi.png", plot = scatter_bmi, width = 7, height = 5)
 
 
 
-# Skapa enkel regressionsmodell charges vs risk_score (baseline) ----
+
+# ---- s4-enkel-regressionsmodell-charges-vs-risk_score
 
 model_baseline <- lm(charges ~ risk_score, data = data_clean)
 
@@ -72,35 +77,43 @@ summary(model_baseline)
 
 
 
-# Skapa en multipel modell charges vs age + smoker + bmi_category + chronic_condition ---- 
 
-# Ändra referensnivå för BMI-kategori till "normal"
+# ---- s4-multipel-modell-prior_events-risk_score
 
-data_clean$bmi_category <- relevel(data_clean$bmi_category, ref = "normal")
 
-model_multi <- lm(charges ~ age + smoker + bmi_category + chronic_condition, data = data_clean)
+model_multi <- lm(charges ~ prior_events + risk_score, data = data_clean)
+
+# ---- s4-summary-multipel-modell-prior_events-risk_score
 
 summary(model_multi)
 
 
 
-# Skapa en "extrem" multipel modell charges vs age + smoker + bmi_category + chronic_condition + prior_events ----
 
-model_extreme <- lm(charges ~ age + smoker + bmi_category + chronic_condition + prior_events, data_clean)
+# ---- s4-multipel-modell-prior_events-smoker-bmi_category-chronic_condition
+
+# Ändra referensnivå för BMI-kategori till "normal"
+
+data_clean$bmi_category <- relevel(data_clean$bmi_category, ref = "normal")
+
+model_without_risk_score <- lm(charges ~ prior_events + smoker + bmi_category + chronic_condition, data = data_clean)
+
+# ---- s4-summary-model-without-risk-score
+
+summary(model_without_risk_score)
+
+
+
+
+# ---- s4-"extrem"-multipel-modell-alla-variabler
+
+model_extreme <- lm(charges ~ age_category + smoker + bmi_category + chronic_condition + prior_events, data = data_clean)
 
 summary(model_extreme)
 
 
 
-# Skapa en modell med en interaktionsterm (smoker x bmi_category)
-
-model_interaction <- lm(charges ~ age + smoker * bmi_category + chronic_condition + prior_events, data = data_clean)
-
-summary(model_interaction)
-
-
-
-# Sammanfattning ----
+# ---- s4-sammanfattning
 
 # Skapa en snygg jämförande tabell
 
@@ -122,8 +135,8 @@ gof_template <- list(
 models <- list(
   "Modell 1: Baseline" = model_baseline,
   "Modell 2: Multipel" = model_multi,
-  "Modell 3: Multipel + prior_events" = model_extreme,
-  "Modell 4: Interaktion" = model_interaction
+  "Modell 3: Orginalvariabler istället för risk_score" = model_without_risk_score,
+  "Modell 4: Alla intressanta variabler" = model_extreme
 )
 
 # Tabellen
@@ -135,11 +148,11 @@ modelsummary(models,
              gof_map = gof_template,
              title = "Jämförelse: Från enkel till komplex modell")
 
+knitr::include_graphics("output/regression/summary_table.png")
 
+# ---- s4-utvärdering
 
-# Utvärdering ----
-
-# Prediktioner och residualer
+# ---- s4-prediktioner-och-residualer
 
 pred_resid_data <- bind_rows(
   data_clean %>%
@@ -147,12 +160,12 @@ pred_resid_data <- bind_rows(
            residual = charges - predicted,
            model = "Modell 2: Multipel"),
   data_clean %>%
-    mutate(predicted = predict(model_interaction),
+    mutate(predicted = predict(model_extreme),
            residual = charges - predicted,
-           model = "Modell 4: Interaktion")
+           model = "Modell 4: Max")
 )
 
-# Residualer vs predikterade värden 
+# ---- s4-residualer-vs-predikterade värden 
 
 plot_resid_pred <- ggplot(pred_resid_data, aes(x = predicted, y = residual)) +
   geom_point(alpha = 0.3, color = "steelblue") + 
@@ -163,11 +176,16 @@ plot_resid_pred <- ggplot(pred_resid_data, aes(x = predicted, y = residual)) +
        x = "Modellens gissning (Predicted)",
        y = "Felmarginal (Residual)")
 
+# ---- s4-visa-resid-pred-plot
+
 plot_resid_pred
+
+# ---- s4-spara-resid-pred-plot
+
 ggsave("output/regression/plot_resid_pred.png", plot_resid_pred, width = 10, height = 5)
 
 
-# Faktiskt vs predikterat pris 
+# ---- s4-faktiskt-vs-predikterat pris 
 
 plot_actual_charge <- ggplot(pred_resid_data, aes(x = predicted, y = charges)) +
   geom_point(alpha = 0.3, color = "steelblue") + 
@@ -178,11 +196,16 @@ plot_actual_charge <- ggplot(pred_resid_data, aes(x = predicted, y = charges)) +
        x = "Modellens gissning (Predicted)",
        y = "Faktiskt kostnad (Actual)")
 
+# ---- s4-visa-acutal-charge-plot
+
 plot_actual_charge
+
+# ---- s4-spara-actual-charge-plot
+
 ggsave("output/regression/plot_actual_charge.png", plot_actual_charge, width = 10, height = 5)
 
 
-# QQ-plot 
+# ---- s4-QQ-plot 
 
 plot_qq <- ggplot(pred_resid_data, aes(sample = residual)) +
   stat_qq() +
@@ -191,7 +214,12 @@ plot_qq <- ggplot(pred_resid_data, aes(sample = residual)) +
   theme_minimal() +
   labs(title = "QQ-plot: normalfördelning av fel")
 
+# ---- s4-visa-qq-plot
+
 plot_qq
+
+# ---- s4-spara-qq-plot
+
 ggsave("output/regression/plot_qq.png", plot_qq, width = 10, height = 5)
 
 

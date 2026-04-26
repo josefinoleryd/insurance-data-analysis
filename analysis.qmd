@@ -9,7 +9,7 @@ format:
 ```{r setup}
 #| message: false
 #| warning: false
-#| echo: true
+#| echo: false
 
 library(knitr)
 library(tidyverse)
@@ -24,11 +24,9 @@ read_chunk("scripts/03_descriptive_analysis.R")
 read_chunk("scripts/04_regression_analysis.R")
 ```
 
-Skriv kort om setup-blocket.
-
 ## Inledning
 
-Skriv inledningstext här
+Jag, en analytiker på det påhittade försäkringsbolaget Villkor i Finstil, har fått i uppdrag att undersöka om bolagets prissättning verkar följa rimliga mönster. Villkor i Finstil vill också veta vilka faktorer som driver kostnader mest. Jag ska även undersöka om en regressionsmodell kan användas som stöd vid framtida prissättning av liknande kunder (cashing!).
 
 ## Dataförståelse
 
@@ -199,7 +197,7 @@ Inkonsekvenser i kategoriska variabler är exempelvis olika stavningar för samm
 
 För att få fram inkonsekvenser i de numeriska variablerna väljer jag att göra en summary() på data_raw, men bara på "is.numeric".
 
-Inkonsekvenser i numeriska variabler är exempelvis negativa tal på ställen där det inte är realistiskt möjlig, som exempelvis age, bmi eller annual_checkups. Orimligt höga värden är också inkonsekvenser. Än så länge finns det ingen människa äldre än 120 år eller som har ett bmi på över 180 (#JonBrowerMinnoch #Murica)
+Inkonsekvenser i numeriska variabler är exempelvis negativa tal på ställen där det inte är realistiskt möjlig, som exempelvis age, bmi eller annual_checkups. Orimligt höga värden är också inkonsekvenser. Än så länge finns det ingen människa äldre än 120 år eller som har ett bmi på över 180 (#JonBrowerMinnoch #Murica) så där hade jag fått dra gränsen.
 
 Men den främsta användningen av summary() är att kolla datans fördelning, skevhet och outliers.
 
@@ -496,3 +494,179 @@ Medelvärde och median ligger nära varandra inom varje grupp vilket tyder på a
 Riskgrupp 1 (och även riskgrupp 0, marginellt) har ett något högre medelvärde jämfört med medianvärde vilket innebär att några individer i den här gruppen drar upp snittet. Vilket i sin tur kan innebära att risk_score ensamt inte förklarar charges.
 
 På samma sätt innebär ett högre medianvärde jämfört med medelvärde (dvs att några individer drar ner snittet) i grupp 2 och 3 att risk_score inte förklarar alla kostnadsskillnader.
+
+## Regressionsanalys
+
+### Försmak: scatterplots kontinuerliga variabler 
+
+```{r s4-age}
+```
+
+```{r s4-visa-plotten-age}
+#| message: false
+```
+
+```{r s4-bmi}
+```
+
+```{r s4-visa-plotten-bmi}
+#| message: false
+```
+
+### Regressionsmodeller
+
+#### Enkel regressionsmodell, modell 1
+
+```{r s4-enkel-regressionsmodell-charges-vs-risk_score}
+```
+
+Eftersom varken age eller bmi ensamma ger ett starkt linjärt samband och att den starkaste variabeln i analyserna i tidigare avsnitt är risk_score väljer jag att starta med en enkel regressionsmodell där risk_score är den beroende variabeln.
+
+En sammanfattning av modellens resultat visar:
+
+-   Intercept (6990): "grundkostnaden" dvs en person med risk_score 0 förväntas ha en kostnad på 6990 enheter
+
+-   Risk_score (4346.8): kostnaden ökar med 4346.8 enheter för varje steg risk_score ökar
+
+-   P-värdet är mycket lågt och har fått tre stjärnor vilket innebär att sambandet mellan risk_score och charges är statistiskt säkerställt
+
+-   Förklaringsgraden (R2) är 0.4767 - risk_score förklarar ensamt nästan 48 % av all variation i kostnaderna. Resterande 52 % förklaras av andra faktorer
+
+-   Medianen för residualerna är nära noll, men maxvärdet är 16 875 och minvärdet är -9 569 vilket innebär att modellen missar med stora belopp. Modellens genomsnittliga felmarginal är 3311 enheter.
+
+#### Multipel regressionsmodell, modell 2
+
+```{r s4-multipel-modell-prior_events-risk_score}
+```
+
+```{r s4-summary-multipel-modell-prior_events-risk_score}
+```
+
+Nästa naturliga steg är att skapa en multipel regressionsmodell där den självklara tillkommande variabeln är prior_events (eftersom den variabeln hade nästhögst korrelation).
+
+En sammanfattning av modellens resultat visar:
+
+-   Intercept (6474.7): en person med 0 risk_score och 0 prior_events förväntas ha en kostnad på 6474.7 enheter.
+
+-   Prior_events (1188.3): för varje tidigare händelse ökar kostnaden med ca 1188 enheter.
+
+-   Risk_score (4218.4): kostnaden ökar med 4218.4 för varje steg risk_score ökar
+
+-   P-värdet är mycket lågt även i den här modellen
+
+-   Förklaringsgraden ökar med ca 4 procentenheter till 52 % jämfört med den enkla modellen
+
+-   Residualfördelningen liknar den i baselinemodellen med en genomsnittlig felmarginal på 3174 enheter.
+
+#### Multipel regressionsmodell - orginalvariabler istället för risk_score, modell 3
+
+```{r s4-multipel-modell-prior_events-smoker-bmi_category-chronic_condition}
+```
+
+Jag behöver ändra den ordning som bmi-kategorierna kommer i för att referensnivån ska vara "normal" och inte "underweight" (som jag hade när jag bara ville presentera grupperna i snygg storleksordning)
+
+```{r s4-summary-model-without-risk-score}
+```
+
+Som nästa steg ville jag testa om risk_score är så himlans bra som den vill få oss att tro. Därför valde jag att ersätta risk_score med de ingående beståndsdelarna: smoker, bmi_category och chronic_condition.
+
+En sammanfattning av modellens resultat visar:
+
+-   Förklaringsgraden stiger enda upp till 68.17 %! Att ge varje hälsofaktor (smoker, bmi_category, chronic_condition) sin egen vikt gör att modellen kan förklara över 68 % av alla kostnadsskillnader
+
+-   Modellen är mer träffsäker - residual standard error har sjunkt till 2 588, men modellen missar fortfarande med stora belopp (16 972 vs -9 387).
+
+-   Alla faktorer förutom bmi_categoryunderweight är statistiskt signifikanta. Det betyder att det inte finns någon statistisk skillnad i kostnad mellan "underweight" och "normal"
+
+-   Den kraftigaste faktorn är smokeryes med en koefficient på 7 626.90 - dvs att allt annat lika så är kostnaden 7 626.90 enheter högre för en rökare jämfört med en icke-rökare
+
+-   Den näst starkaste faktorn efter rökning är chronic_conditionyes. Att ha ett kroniskt tillstånd ökar den förväntade kostnaden med ca 4 115 enheter.
+
+-   Jämfört med "overweight" är det "obese" som driver kostnaden uppåt (2 057.93 jämfört med 681.55)
+
+#### Multipel regressionsmodell - alla intressanta variabler, modell 4
+
+```{r s4-"extrem"-multipel-modell-alla-variabler}
+```
+
+Som sista modell valde jag att slänga in age_category också för att se vad som händer med förklaringsgraden då jag använder alla intressanta variabler.
+
+Resultatet blev ingen större ökning eller skillnad jämfört med modellen innan. Förklaringsgraden ökar endast några procentenheter upp till 71.5. Rökning och kroniskt tillstånd kvarstår som de mest betydande faktorerna.
+
+### Sammanfattning och fördjupande utvärdering
+
+```{r s4-sammanfattning}
+```
+
+Jag väljer att göra en sammanfattande tabell med hjälp av funktionen modelsummary() från paketet modelsummary och lägger till måtten AIC (Akaike Information Criterion) och BIC (Bayesian Information Criterion) för att se om modellerna faktiskt blir bättre av fler variabler.
+
+R2 stiger nästan alltid när man lägger till fler variabler i en modell, men det betyder inte automatiskt att modellen är bättre (pga overfitting). AIC och BIC är mått som straffar modellen om den är onödigt komplex. När det kommer till AIC och BIC är lägre värden bättre. Anledningen att AIC/BIC är uppe på över 20 000 är pga skalan på datan (dvs att charges är höga siffror och att antalet observationer är över 1 000).
+
+I tabellen går det att utläsa att mellan modell 1 och modell 4 sjunker både AIC och BIC (som är strängare) från 20 956/20 971 till 20 299/20 349 vilket är ett statistiskt bevis på att de nya variablerna faktiskt tillför värde.
+
+#### Fördjupande utvärdering
+
+```{r s4-prediktioner-och-residualer}
+```
+
+För att förstå varför och när en modell har fel valde jag att göra 3 figurer:
+
+-   residualanalys
+
+-   faktiskt vs predikterat pris
+
+-   normalfördelningen av fel (qq-plot)
+
+Och för att se om felen blir färre och mindre när modellen blir bättre valde jag att jämföra Modell 2 (den "enkla" multipla modellen) och Modell 4 (den "extrema" multipla modellen).
+
+För att åstadkomma detta behövde jag samla faktiska värden, förutsagda värden och felmarginaler i en enda tabell: pred_resid_data.
+
+bind_rows() är en funktion som tar två (eller fler) dataset och lägger dem "på varandra" (vertikalt).
+
+Den första delen av bind_rows() tar data_clean och kör den igenom en mutate-funktion. I mutate() skapas tre nya kolumner för den första modellen:
+
+-   predicted: predict() räknar ut vad modellen tror att värdet ska vara för varje rad
+
+-   residual: felet räknas ut med formeln "charges" - "predicted"
+
+-   model: en etikett ("Modell 2: Multipel") läggs till så varje rad tillhör en modell
+
+Sedan görs samma sak för den andra modellen.
+
+När bind_rows() är klar har man fått en lång tabell där övre hälften innehåller all orginaldata plus beräkningar från den första modellen och där den nedre häften innehåller samma orginaldata fast med beräkningar från den andra modellen.
+
+Det här objektet, pred_resid_data, används sedan med ggplot() för att skapa figurerna.
+
+```{r s4-residualer-vs-predikterade värden}
+```
+
+```{r s4-visa-resid-pred-plot}
+```
+
+Här vill man se prickarna slumpmässigt utspridda kring noll-linjen.
+
+Att båda modellerna har ser ut att ha ungefär lika många prickar över linjen som under linjen är i grunden bra. Det betyder att modellerna inte bara gissar för högt eller för lågt hela tiden.
+
+Men spridningen är ganska stor, det finns många punkter långt från noll. Modellerna fångar en del av kostnadsvariationerna, men absolut inte allt. Det finns mycket kvar som modellerna inte förklarar.
+
+```{r s4-faktiskt-vs-predikterat pris}
+```
+
+```{r s4-visa-acutal-charge-plot}
+```
+
+Den röda streckade linjen motsvarar "perfektion" dvs predicted = faktiskt kostnad.
+
+Molnet för modell 4 följer linjen någorlunda och har inte de där "banden" (prickarna bildar lodräta streck) som modell 2 har. Sådana band uppstår då modellen har få variabler och delar in observationerna i fåtal fack och ger alla i det facket samma gissning. Modell 4 har fler variabler som hjälper till att förklara kostnadsvariationerna och blir därför mer nyanserad.
+
+Båda modellerna har extremvärden som springer iväg långt ifrån linjen, framförallt långt över. Det innebär att modellerna missar de dyrare fallen.
+
+```{r s4-QQ-plot}
+```
+
+```{r s4-visa-qq-plot}
+```
+
+För att en linjär regression ska vara pålitligt vill vi att felen ska vara normalfördelade, punkterna ska alltså följa den röda linjen.
+
+I mitten ser det riktigt snyggt ut! De flesta fel följer linjen klockrent. Men i ändarna går det utför... (eller uppför). Modellerna har liknande "heavy tails" vilket betyder att de underskattar de dyraste fallen. Modellerna har alltså svårt med extremer, framförallt höga, men också låga i mindre utsträckning.
