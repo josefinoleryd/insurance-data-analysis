@@ -108,7 +108,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="inledning" class="level2">
 <h2 class="anchored" data-anchor-id="inledning">Inledning</h2>
-<p>Jag, en analytiker på det påhittade försäkringsbolaget Villkor i Finstil, har fått i uppdrag att undersöka om bolagets prissättning verkar följa rimliga mönster. Villkor i Finstil vill också veta vilka faktorer som driver kostnader mest. Jag ska även undersöka om en regressionsmodell kan användas som stöd vid framtida prissättning av liknande kunder (cashing!).</p>
+<p>Jag, en analytiker på det påhittade försäkringsbolaget Villkor i Finstil, har fått i uppdrag att</p>
+<ul>
+<li><p>identifiera vilka faktorer som driver försäkringskostnader</p></li>
+<li><p>utvärdera om nuvarande prissättning följer rimliga mönster</p></li>
+<li><p>undersöka om en regressionsmodell kan användas som stöd vid framtida prissättning</p></li>
+</ul>
 </section>
 <section id="dataförståelse" class="level2">
 <h2 class="anchored" data-anchor-id="dataförståelse">Dataförståelse</h2>
@@ -365,7 +370,7 @@ $ charges           &lt;dbl&gt; 6439.10, 8274.06, 5190.99, 14500.35, 6534.40, 80
 </div>
 </div>
 <p>För att få fram inkonsekvenser i de numeriska variablerna väljer jag att göra en summary() på data_raw, men bara på “is.numeric”.</p>
-<p>Inkonsekvenser i numeriska variabler är exempelvis negativa tal på ställen där det inte är realistiskt möjlig, som exempelvis age, bmi eller annual_checkups. Orimligt höga värden är också inkonsekvenser. Än så länge finns det ingen människa äldre än 120 år eller som har ett bmi på över 180 (#JonBrowerMinnoch #Murica)</p>
+<p>Inkonsekvenser i numeriska variabler är exempelvis negativa tal på ställen där det inte är realistiskt möjlig, som exempelvis age, bmi eller annual_checkups. Orimligt höga värden är också inkonsekvenser. Än så länge finns det ingen människa äldre än 120 år eller som har ett bmi på över 180 (#JonBrowerMinnoch #Murica) så där hade jag fått dra gränsen.</p>
 <p>Men den främsta användningen av summary() är att kolla datans fördelning, skevhet och outliers.</p>
 <ul>
 <li><p>Charges:</p>
@@ -982,7 +987,7 @@ $ risk_score        &lt;dbl&gt; 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 
 </div>
 </div>
 </div>
-<p>Kort om varför är lite intressant/kul att se dessa scatterplots</p>
+<p>Som en extra kontroll innan jag kickar igång regressionsanalysen väljer jag att plotta age och bmi i scatterplots. Detta gör det möjligt att bedöma om antagandet om linjärt samband är rimligt inför regressionsanalysen.</p>
 </section>
 <section id="regressionsmodeller" class="level3">
 <h3 class="anchored" data-anchor-id="regressionsmodeller">Regressionsmodeller</h3>
@@ -1013,7 +1018,8 @@ Multiple R-squared:  0.4767,    Adjusted R-squared:  0.4762
 F-statistic:  1000 on 1 and 1098 DF,  p-value: &lt; 2.2e-16</code></pre>
 </div>
 </div>
-<p>Eftersom varken age eller bmi ensamma ger ett starkt linjärt samband och att den starkaste variabeln i analyserna i tidigare avsnitt är risk_score väljer jag att starta med en enkel regressionsmodell där risk_score är den beroende variabeln.</p>
+<p>Scatterplotsen indikerar att varken age eller bmi ensamma uppvisar ett starkt linjärt samband med charges, vilket tyder på att ytterligare variabler behöver inkluderas för att förklara variationen. Tidigare analyser visar att risk_score har en starkare koppling till charges, varför regressionsanalysen inleds med en modell där denna variabel inkluderas som central förklarande faktor.</p>
+<p>Att börja med en enkel modell är en etablerad strategi då det ger en tydlig referenspunkt och underlättar tolkningen av hur ytterligare variabler påverkar modellen.</p>
 <p>En sammanfattning av modellens resultat visar:</p>
 <ul>
 <li><p>Intercept (6990): “grundkostnaden” dvs en person med risk_score 0 förväntas ha en kostnad på 6990 enheter</p></li>
@@ -1300,6 +1306,44 @@ F-statistic: 343.3 on 8 and 1091 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>I mitten ser det riktigt snyggt ut! De flesta fel följer linjen klockrent. Men i ändarna går det utför… (eller uppför). Modellerna har liknande “heavy tails” vilket betyder att de underskattar de dyraste fallen. Modellerna har alltså svårt med extremer, framförallt höga, men också låga i mindre utsträckning.</p>
 </section>
 </section>
+</section>
+<section id="tolkning-och-slutsatser" class="level2">
+<h2 class="anchored" data-anchor-id="tolkning-och-slutsatser">Tolkning och slutsatser</h2>
+<p>De starkaste sambanden med kostnader identifierades både genom explorativ analys och genom regressionsmodeller. Variabler kopplade till hälsorisk, såsom rökning, kroniska tillstånd och högt bmi, visade tydlig korrelation med kostnader.</p>
+<p>Analysen visar att en strukturerad datastädningsprocess har betydelse för modellernas resultat. Standardisering av kategoriska variabler samt hantering av saknade värden bidrog till att minska brus och inkonsekvenser i datan.</p>
+<p>Feature engineering, såsom skapandet av risk_score och prior_events, förbättrade modellens möjlighet att fånga underliggande mönster.</p>
+<p>Den bästa regressionsmodellen lyckades fånga de övergripande trenderna i datan, men hade svårare att modellera extremvärden i kostnader.</p>
+<p>Trots att modellen fångar flera viktiga samband finns begränsningar. Fördelningen av kostnader är högerskev med flera outliers vilket gör att en linjär modell har svårt att prediktera höga kostnader.</p>
+<p>Modellen antar också linjära samband mellan variabler och kostnader, vilket sannolikt inte fullt ut speglar verkligheten.</p>
+<p>Flera förbättringar hade kunnat stärka analysen. En möjlig åtgärd är att transformera målvariabeln för att hantera skevhet och förbättra modellens prestanda. log-transform av charges är ett exempel (där stora värden hade “tryckts ihop” och därmed dämpat outliers).</p>
+<p>Mer avancerade modeller, exempelvis beslutsträd eller ensemblemetoder, kunnat testas för att bättre fånga icke-linjära samband.</p>
+<p>Även mer systematisk validering, train/test-split och cross-validation, kunnat ge en mer robust utvärdering av modellen,</p>
+<p>Slutligen hade ytterligare feature engineering, såsom interaktionseffekter mellan variabler (t. ex. rökning och ålder) kunnat ge ytterligare förbättringar.</p>
+</section>
+<section id="självreflektion" class="level2">
+<h2 class="anchored" data-anchor-id="självreflektion">Självreflektion</h2>
+<p>Följande tycker jag att jag gjorde särskilt bra:</p>
+<ul>
+<li><p>Strukturerad arbetsprocess där varje steg kopplas till nästa</p></li>
+<li><p>Grundlig datakvalitetsanalys, där jag tycker att min undersökning av flera olika typer av dubbletter sticker ut</p></li>
+<li><p>Tydlig och ordningsam kod</p></li>
+<li><p>Genomtänkt feature engineering</p></li>
+<li><p>Enhetliga figurer</p></li>
+</ul>
+<p>Följande tyckte jag att jag gjorde mindre bra:</p>
+<ul>
+<li>Jag bör ha gett mig själv mer tid att “kill your darlings”. Jag känner att arbetet hade gått att göra lite mer koncist, men nu på grund av tidsbrist behöver jag behålla allt för att inte tappa den röda tråden. Anledningen att det blev så långt är att det var så kul och jag ville undersöka ALLT. Men allt behöver ju inte lämnas in (även om en viss Joakim en gång sa att “jag inte kommer hindra er från att göra MER” och jag har verkligen tagit detta till mig…)</li>
+</ul>
+<p>Följande tyckte jag var särskilt svårt:</p>
+<ul>
+<li>Det var svårt att arbeta med Quarto. Det tog en bra stund innan jag fick flyt på hur det behöver stå i scripten och i quarto-filen för att det ska renderas en snygg rapport. Jupyter Notebook är så otroligt mycket mer lättanvänd. Jag saknade det lätta flöde som Jupyter Notebook ger när man kan samla all kod och all output på samma ställe. Med scripts och Quarto var det svårt att få till strukturen.</li>
+</ul>
+<p>Jag tycker mitt arbete motsvarar betyg VG för att samtliga betygskrav är uppfyllda. Där Tolkning och slutsatser i denna rapport samt den separata affärsmässiga rapporten till “uppdragsgivaren” särskilt uppfyller kraven:</p>
+<ul>
+<li><p>“visa en säkrare och mer självständig tolkning av resultaten”</p></li>
+<li><p>“föra ett välgrundat resonemang om vad modellen fångar och inte fångar”</p></li>
+<li><p>“diskutera möjliga förbättringar av analysen”</p></li>
+</ul>
 </section>
 
 </main>

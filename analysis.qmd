@@ -26,7 +26,13 @@ read_chunk("scripts/04_regression_analysis.R")
 
 ## Inledning
 
-Jag, en analytiker på det påhittade försäkringsbolaget Villkor i Finstil, har fått i uppdrag att undersöka om bolagets prissättning verkar följa rimliga mönster. Villkor i Finstil vill också veta vilka faktorer som driver kostnader mest. Jag ska även undersöka om en regressionsmodell kan användas som stöd vid framtida prissättning av liknande kunder (cashing!).
+Jag, en analytiker på det påhittade försäkringsbolaget Villkor i Finstil, har fått i uppdrag att
+
+-   identifiera vilka faktorer som driver försäkringskostnader
+
+-   utvärdera om nuvarande prissättning följer rimliga mönster
+
+-   undersöka om en regressionsmodell kan användas som stöd vid framtida prissättning
 
 ## Dataförståelse
 
@@ -513,6 +519,8 @@ På samma sätt innebär ett högre medianvärde jämfört med medelvärde (dvs 
 #| message: false
 ```
 
+Som en extra kontroll innan jag kickar igång regressionsanalysen väljer jag att plotta age och bmi i scatterplots. Detta gör det möjligt att bedöma om antagandet om linjärt samband är rimligt inför regressionsanalysen.
+
 ### Regressionsmodeller
 
 #### Enkel regressionsmodell, modell 1
@@ -520,7 +528,9 @@ På samma sätt innebär ett högre medianvärde jämfört med medelvärde (dvs 
 ```{r s4-enkel-regressionsmodell-charges-vs-risk_score}
 ```
 
-Eftersom varken age eller bmi ensamma ger ett starkt linjärt samband och att den starkaste variabeln i analyserna i tidigare avsnitt är risk_score väljer jag att starta med en enkel regressionsmodell där risk_score är den beroende variabeln.
+Scatterplotsen indikerar att varken age eller bmi ensamma uppvisar ett starkt linjärt samband med charges, vilket tyder på att ytterligare variabler behöver inkluderas för att förklara variationen. Tidigare analyser visar att risk_score har en starkare koppling till charges, varför regressionsanalysen inleds med en modell där denna variabel inkluderas som central förklarande faktor.
+
+Att börja med en enkel modell är en etablerad strategi då det ger en tydlig referenspunkt och underlättar tolkningen av hur ytterligare variabler påverkar modellen.
 
 En sammanfattning av modellens resultat visar:
 
@@ -670,3 +680,55 @@ Båda modellerna har extremvärden som springer iväg långt ifrån linjen, fram
 För att en linjär regression ska vara pålitligt vill vi att felen ska vara normalfördelade, punkterna ska alltså följa den röda linjen.
 
 I mitten ser det riktigt snyggt ut! De flesta fel följer linjen klockrent. Men i ändarna går det utför... (eller uppför). Modellerna har liknande "heavy tails" vilket betyder att de underskattar de dyraste fallen. Modellerna har alltså svårt med extremer, framförallt höga, men också låga i mindre utsträckning.
+
+## Tolkning och slutsatser
+
+De starkaste sambanden med kostnader identifierades både genom explorativ analys och genom regressionsmodeller. Variabler kopplade till hälsorisk, såsom rökning, kroniska tillstånd och högt bmi, visade tydlig korrelation med kostnader.
+
+Analysen visar att en strukturerad datastädningsprocess har betydelse för modellernas resultat. Standardisering av kategoriska variabler samt hantering av saknade värden bidrog till att minska brus och inkonsekvenser i datan.
+
+Feature engineering, såsom skapandet av risk_score och prior_events, förbättrade modellens möjlighet att fånga underliggande mönster.
+
+Den bästa regressionsmodellen lyckades fånga de övergripande trenderna i datan, men hade svårare att modellera extremvärden i kostnader.
+
+Trots att modellen fångar flera viktiga samband finns begränsningar. Fördelningen av kostnader är högerskev med flera outliers vilket gör att en linjär modell har svårt att prediktera höga kostnader.
+
+Modellen antar också linjära samband mellan variabler och kostnader, vilket sannolikt inte fullt ut speglar verkligheten.
+
+Flera förbättringar hade kunnat stärka analysen. En möjlig åtgärd är att transformera målvariabeln för att hantera skevhet och förbättra modellens prestanda. log-transform av charges är ett exempel (där stora värden hade "tryckts ihop" och därmed dämpat outliers).
+
+Mer avancerade modeller, exempelvis beslutsträd eller ensemblemetoder, kunnat testas för att bättre fånga icke-linjära samband.
+
+Även mer systematisk validering, train/test-split och cross-validation, kunnat ge en mer robust utvärdering av modellen,
+
+Slutligen hade ytterligare feature engineering, såsom interaktionseffekter mellan variabler (t. ex. rökning och ålder) kunnat ge ytterligare förbättringar.
+
+## Självreflektion
+
+Följande tycker jag att jag gjorde särskilt bra:
+
+-   Strukturerad arbetsprocess där varje steg kopplas till nästa
+
+-   Grundlig datakvalitetsanalys, där jag tycker att min undersökning av flera olika typer av dubbletter sticker ut
+
+-   Tydlig och ordningsam kod
+
+-   Genomtänkt feature engineering
+
+-   Enhetliga figurer
+
+Följande tyckte jag att jag gjorde mindre bra:
+
+-   Jag bör ha gett mig själv mer tid att "kill your darlings". Jag känner att arbetet hade gått att göra lite mer koncist, men nu på grund av tidsbrist behöver jag behålla allt för att inte tappa den röda tråden. Anledningen att det blev så långt är att det var så kul och jag ville undersöka ALLT. Men allt behöver ju inte lämnas in (även om en viss Joakim en gång sa att "jag inte kommer hindra er från att göra MER" och jag har verkligen tagit detta till mig...)
+
+Följande tyckte jag var särskilt svårt:
+
+-   Det var svårt att arbeta med Quarto. Det tog en bra stund innan jag fick flyt på hur det behöver stå i scripten och i quarto-filen för att det ska renderas en snygg rapport. Jupyter Notebook är så otroligt mycket mer lättanvänd. Jag saknade det lätta flöde som Jupyter Notebook ger när man kan samla all kod och all output på samma ställe. Med scripts och Quarto var det svårt att få till strukturen.
+
+Jag tycker mitt arbete motsvarar betyg VG för att samtliga betygskrav är uppfyllda. Där Tolkning och slutsatser i denna rapport samt den separata affärsmässiga rapporten till "uppdragsgivaren" särskilt uppfyller kraven:
+
+-   "visa en säkrare och mer självständig tolkning av resultaten"
+
+-   "föra ett välgrundat resonemang om vad modellen fångar och inte fångar"
+
+-   "diskutera möjliga förbättringar av analysen"
