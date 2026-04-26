@@ -521,7 +521,12 @@ $ charges           &lt;dbl&gt; 6439.10, 8274.06, 5190.99, 14500.35, 6534.40, 80
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>I föregående avsnitt upptäckte vi att exercise_level innehöll 22 NA:n och att 22 observationer motsvarar 2 % av hela datan. Vi kunde också se att exercise_level bestod av 3 kategorier: low, medium och high med en rimlig fördelning inom kategorierna (low = 307, medium = 561 och high = 210 observationer).</p>
-<p>Eftersom datasetet redan är litet är jag motvillig att ta bort något. Eftersom kategorin medium redan var så stor valde jag att ersätta alla saknade värden i exercise_level med det vanligaste, medium. Men för att göra koden säker inför framtiden då datan kan ändras skapade jag en funktion som tar fram det vanligaste värdet (mode) istället för att hårdkoda.</p>
+<p>Eftersom datasetet redan är litet är jag motvillig att ta bort något. Eftersom kategorin medium redan var så stor valde jag att ersätta alla saknade värden i exercise_level med det vanligaste, medium. Men för att göra koden säker inför framtiden då datan kan ändras använde jag en funktion som tar fram det vanligaste värdet (mode) istället för att hårdkoda.</p>
+<p>na.omit(x) tar bort tomma värden</p>
+<p>ux &lt;- unique() hittar vilka värden som finns</p>
+<p>tabulate(match(x, ux)) räknar hur många gåner varje värde finns</p>
+<p>which.max() tar det största antalet</p>
+<p>ux[ ] plockar ut det värdet som förekommer flest gånger</p>
 </section>
 <section id="städa-och-feature-engineering-i-samma-pipe" class="level3">
 <h3 class="anchored" data-anchor-id="städa-och-feature-engineering-i-samma-pipe">Städa och feature engineering i samma pipe</h3>

@@ -297,7 +297,17 @@ Age har inga outliers och boxen är stor och centralt placerad vilket visar på 
 
 I föregående avsnitt upptäckte vi att exercise_level innehöll 22 NA:n och att 22 observationer motsvarar 2 % av hela datan. Vi kunde också se att exercise_level bestod av 3 kategorier: low, medium och high med en rimlig fördelning inom kategorierna (low = 307, medium = 561 och high = 210 observationer).
 
-Eftersom datasetet redan är litet är jag motvillig att ta bort något. Eftersom kategorin medium redan var så stor valde jag att ersätta alla saknade värden i exercise_level med det vanligaste, medium. Men för att göra koden säker inför framtiden då datan kan ändras skapade jag en funktion som tar fram det vanligaste värdet (mode) istället för att hårdkoda.
+Eftersom datasetet redan är litet är jag motvillig att ta bort något. Eftersom kategorin medium redan var så stor valde jag att ersätta alla saknade värden i exercise_level med det vanligaste, medium. Men för att göra koden säker inför framtiden då datan kan ändras använde jag en funktion som tar fram det vanligaste värdet (mode) istället för att hårdkoda.
+
+na.omit(x) tar bort tomma värden
+
+ux \<- unique() hittar vilka värden som finns
+
+tabulate(match(x, ux)) räknar hur många gåner varje värde finns
+
+which.max() tar det största antalet
+
+ux\[ \] plockar ut det värdet som förekommer flest gånger
 
 ### Städa och feature engineering i samma pipe
 
